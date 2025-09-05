@@ -1,0 +1,241 @@
+!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Buzzword Bingo!</title>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:300,700' rel='stylesheet' type='text/css'>
+    <style>
+        body {
+          display: flex;
+          height: 100%; 
+          flex-direction: column;
+          font-family: 'Open Sans', 'Helvetica Nueue', sans-serif;
+        }
+        header,
+        footer {
+          flex: none; 
+        }
+        .page {
+          display: flex;
+          flex: 1 0 auto; 
+          flex-direction: row;
+        }
+        .left,
+        .right {
+          height: 850px;
+          padding: 1em;
+          margin: 10px;
+          border-radius: 3px;
+          flex: 0 0 16em;
+          background: rgba(43, 132, 54, 0.1);
+        }
+        .content {
+            display: flex;
+            flex: 1;
+            padding: 0;
+            margin: 0;
+            align-items: center;
+            flex-direction: column;
+        }
+        .left {
+            order: -1;
+        }
+        #drawn {
+            height: 700px;
+            width: 100%;
+            text-align: center;
+            font-weight: 700;
+            font-size: 5em;
+        }
+        #controls {
+            margin: auto;
+        }
+        form {
+            height: 100%;
+        }
+        h1 {
+            font-size: 5em;
+            text-align: center;
+        }
+        h2 {
+            font-size: 2em;
+        }
+        input[type="button"] {
+            border: none;
+            height: 80px;
+            padding: 20px;
+            width: 200px;
+            font-size: 2em;
+            border-radius: 3px;
+        }
+
+        #accept {
+            background: #2B8336;
+        }
+
+        #reject {
+            background: #AA3E39;
+        }
+
+        #accept:disabled {
+            background: rgba(43, 132, 54, 0.1);
+        }
+
+        #reject:disabled {
+            background: rgba(170, 62, 57, 0.1);
+        }
+
+        li {
+            list-style-type: none;
+            font-size: 1.5em;
+        }
+    </style>
+</head>
+<body>
+      <header>
+          <h1>Buzzword Bingo!</h1>
+      </header>
+      <div class="page">
+        <main class="content">
+            <div id="drawn">
+                
+            </div>
+            <div id="controls">
+                <form action="" id="select">
+                    <input type="button" value="Accept" id="accept">
+                    <input type="button" value="Draw" id="draw">
+                    <input type="button" value="Reject" id="reject">
+                </form>                
+            </div>
+
+        </main>
+        <aside class="left">
+            <h2>
+                Already Drawn
+            </h2>
+            <ul id="alreadydrawn">
+                
+            </ul>
+        </aside>
+        <aside class="right">
+            <h2>
+                Still to Draw
+            </h2>
+            <ul id="to_draw">
+                
+            </ul>
+        </aside>
+      </div>
+      <footer>…</footer>
+    <script>
+        var words = [
+            "tcp/ip",
+            "client-server",
+            "css",
+            "browser wars",
+            "tim berners lee",
+            "html",
+            "web server",
+            "www",
+            "W3C",
+            "ip address",
+            "ftp",
+            "packets",
+            "url",
+            "http",
+            "arpanet",
+            "dns",
+            "GET/POST",
+            "IPV4",
+            "IPV6",
+            "domain name",
+            "web browser",
+            "N.A.T",
+        ];
+
+        var current_word = "";
+
+        var alreadyDrawn = [];
+        if(window.localStorage.alreadyDrawn) {
+            alreadyDrawn = window.localStorage.alreadyDrawn.split(",");
+        } else {
+            window.localStorage.alreadyDrawn = alreadyDrawn;
+        }
+
+        var toDraw = words.filter(function(word) {
+            if(alreadyDrawn.indexOf(word) === -1) {
+                return true;
+            } else {
+                return false;
+            }
+        });
+
+        var update_to_draw_list = function() {
+            var to_draw_list = document.getElementById('to_draw');
+            to_draw_list.innerHTML = "";
+            toDraw.forEach(function(word){
+                var li = document.createElement('li');
+                var text = document.createTextNode(word);
+                li.appendChild(text);
+                to_draw_list.appendChild(li);
+            });            
+        }
+        update_to_draw_list();
+
+        var update_drawn_list = function() {
+            var drawn_list = document.getElementById('alreadydrawn');
+            drawn_list.innerHTML = "";
+            alreadyDrawn.forEach(function(word){
+                var li = document.createElement('li');
+                var text = document.createTextNode(word);
+                li.appendChild(text);
+                drawn_list.appendChild(li);
+            });            
+        }
+        update_drawn_list();
+
+        var draw_button = document.getElementById("draw");
+        var accept_button = document.getElementById("accept");
+        var reject_button = document.getElementById("reject");
+
+        accept_button.disabled = true;
+        reject_button.disabled = true;
+
+        draw_button.addEventListener("click", function(){
+            accept_button.disabled = false;
+            reject_button.disabled = false;            
+            console.log("draw");
+            var draw_index = Math.floor(Math.random()*toDraw.length);
+            console.log(draw_index);
+            current_word = toDraw[draw_index];
+            toDraw.splice(draw_index, 1);
+            var drawn_element = document.getElementById("drawn");
+            drawn_element.innerHTML = "<p>" + current_word + "</p>";
+            update_to_draw_list();
+            draw_button.disabled = true;
+
+        });
+
+        var reset = function() {
+            var drawn_element = document.getElementById("drawn");
+            drawn_element.innerHTML = "";
+            draw_button.disabled = false;
+            accept_button.disabled = true;
+            reject_button.disabled = true;
+            update_to_draw_list();
+            update_drawn_list();            
+        }
+        
+        accept_button.addEventListener("click", function(){
+            alreadyDrawn.push(current_word);
+            window.localStorage.alreadyDrawn = alreadyDrawn;
+            reset();
+        });
+        
+        reject_button.addEventListener("click", function(){
+            toDraw.push(current_word);
+            reset();
+        });
+    </script>
+</body>
+</html>
